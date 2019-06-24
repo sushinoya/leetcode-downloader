@@ -10,82 +10,6 @@ CLIENT = requests.Session()
 DIRECTORY = 'solutions'
 
 
-def login(username, password):
-  # Important step to get csrftoken
-  CLIENT.get(LOGIN_URL)
-
-  csrftoken = CLIENT.cookies['csrftoken'] if 'csrftoken' in CLIENT.cookies else CLIENT.cookies['csrf']
-
-  payload = {
-      'csrfmiddlewaretoken': csrftoken,
-      'login': username,
-      'password': password,
-      'next': '/'
-  }
-
-  CLIENT.post(LOGIN_URL, data=payload, headers=dict(Referer=LOGIN_URL))
-
-# Returns the fastest submission for each problem
-
-
-def fetch_best_submissions():
-  response = CLIENT.get(SUBMISSIONS_URL).json()
-  submissions = response['submissions_dump']
-  filtered_submissions = filter(
-      lambda sub: sub['status_display'] == 'Accepted', submissions)
-  sorted_submissions = sorted(
-      filtered_submissions, key=itemgetter('title', 'runtime'))
-  best_submissions = drop_duplicate_submissions(sorted_submissions)
-
-  return best_submissions
-
-# Keeps the first occurnece of a problem's submission and discard
-# any following submissions to the same problem
-
-
-def drop_duplicate_submissions(submissions):
-  seen_problems = set()
-  submissions_without_duplicates = []
-
-  for submission in submissions:
-    if submission['title'] in seen_problems:
-      continue
-
-    submissions_without_duplicates.append(submission)
-    seen_problems.add(submission['title'])
-
-  return submissions_without_duplicates
-
-
-def save_submission_as_file(submission):
-  print(f'Saving solution for {submission["title"]}')
-
-  if not os.path.exists(DIRECTORY):
-    os.makedirs(DIRECTORY)
-
-  name = f'{DIRECTORY}/{submission["title"]}.{get_file_extension(submission["file_type"])}'
-  comment_symbol = get_comment_symbol(submission["file_type"])
-  with open(name, 'w') as outfile:
-    outfile.write(f'{comment_symbol} Title: {submission["title"]}')
-    outfile.write(f'{comment_symbol} Runtime: {submission["runtime"]}')
-    outfile.write(f'{comment_symbol} Memory: {submission["memory"]}')
-    outfile.write(f'{comment_symbol} Code:\n')
-    outfile.write(submission['code'])
-
-
-if __name__ == '__main__':
-    if (len(sys.argv) != 2):
-        print('Usage: python3 fetch_submissions.py <username>')
-    else:
-        username = sys.argv[1]
-        password = getpass.getpass()
-        login(username, password)
-        submissions = fetch_best_submissions()
-
-        for submission in submissions:
-          save_submission_as_file(submission)
-
-
 # UTIL METHODS
 def get_file_extension(file_type):
   if file_type == 'python3':
@@ -126,3 +50,75 @@ def get_comment_symbol(file_type):
                    'javascript', 'c', 'java', 'cpp']:
     return '//'
   return ''
+
+
+def login(username, password):
+  # Important step to get csrftoken
+  CLIENT.get(LOGIN_URL)
+
+  csrftoken = CLIENT.cookies['csrftoken'] if 'csrftoken' in CLIENT.cookies else CLIENT.cookies['csrf']
+
+  payload = {
+      'csrfmiddlewaretoken': csrftoken,
+      'login': username,
+      'password': password,
+      'next': '/'
+  }
+
+  CLIENT.post(LOGIN_URL, data=payload, headers=dict(Referer=LOGIN_URL))
+
+
+# Returns the fastest submission for each problem
+def fetch_best_submissions():
+  response = CLIENT.get(SUBMISSIONS_URL).json()
+  submissions = response['submissions_dump']
+  filtered_submissions = filter(
+      lambda sub: sub['status_display'] == 'Accepted', submissions)
+  sorted_submissions = sorted(
+      submissions, key=itemgetter('title', 'runtime'))
+  best_submissions = drop_duplicate_submissions(sorted_submissions)
+
+  return best_submissions
+
+
+# Keeps the first occurnece of a problem's submission and discard
+# any following submissions to the same problem
+def drop_duplicate_submissions(submissions):
+  seen_problems = set()
+  submissions_without_duplicates = []
+
+  for submission in submissions:
+    if submission['title'] in seen_problems:
+      continue
+
+    submissions_without_duplicates.append(submission)
+    seen_problems.add(submission['title'])
+
+  return submissions_without_duplicates
+
+
+def save_submission_as_file(submission):
+  print(f'Saving solution for {submission["title"]}')
+
+  if not os.path.exists(DIRECTORY):
+    os.makedirs(DIRECTORY)
+
+  name = f'{DIRECTORY}/{submission["title"]}.{get_file_extension(submission["lang"])}'
+  comment_symbol = get_comment_symbol(submission["lang"])
+  with open(name, 'w') as outfile:
+    outfile.write(f'{comment_symbol} Title: {submission["title"]}\n')
+    outfile.write(f'{comment_symbol} Runtime: {submission["runtime"]}\n')
+    outfile.write(f'{comment_symbol} Memory: {submission["memory"]}\n\n')
+    outfile.write(submission['code'])
+
+if __name__ == '__main__':
+    if (len(sys.argv) != 2):
+        print('Usage: python3 fetch_submissions.py <username>')
+    else:
+        username = sys.argv[1]
+        password = getpass.getpass()
+        login(username, password)
+        submissions = fetch_best_submissions()
+
+        for submission in submissions:
+          save_submission_as_file(submission)

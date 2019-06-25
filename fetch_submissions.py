@@ -2,46 +2,47 @@ import os
 import sys
 import requests
 import getpass
-from operator import itemgetter
+import time
+import random
 
 LOGIN_URL = 'https://leetcode.com/accounts/login/'
 SUBMISSIONS_URL = 'https://leetcode.com/api/submissions/'
+PROBLEMS_URL = 'https://leetcode.com/api/problems/all/'
 CLIENT = requests.Session()
 DIRECTORY = 'solutions'
+FILE_EXTENSIONS = {
+    'mysql': 'sql',
+    'bash': 'sh',
+    'python3': 'py',
+    'php': 'php',
+    'rust': 'rs',
+    'kotlin': 'kt',
+    'scala': 'scala',
+    'golang': 'go',
+    'swift': 'swift',
+    'ruby': 'rb',
+    'javascript': 'py',
+    'csharp': 'cs',
+    'c': 'c',
+    'python': 'py',
+    'java': 'java',
+    'cpp': 'cpp'
+}
 
 
-# UTIL METHODS
+def progress(count, total, status=''):
+    bar_len = 60
+    filled_len = int(round(bar_len * count / float(total)))
+    percents = round(100.0 * count / float(total), 1)
+    bar = '=' * filled_len + '-' * (bar_len - filled_len)
+    sys.stdout.write('[%s] %s%s ...%s\r' % (bar, percents, '%', status))
+    sys.stdout.flush()
+
+
 def get_file_extension(file_type):
-  if file_type == 'python3':
-    return 'py'
-  if file_type == 'php':
-    return 'php'
-  if file_type == 'rust':
-    return 'rs'
-  if file_type == 'kotlin':
-    return 'kt'
-  if file_type == 'scala':
-    return 'scala'
-  if file_type == 'golang':
-    return 'go'
-  if file_type == 'swift':
-    return 'swift'
-  if file_type == 'ruby':
-    return 'rb'
-  if file_type == 'javascript':
-    return 'py'
-  if file_type == 'csharp':
-    return 'cs'
-  if file_type == 'c':
-    return 'c'
-  if file_type == 'python':
-    return 'py'
-  if file_type == 'java':
-    return 'java'
-  if file_type == 'cpp':
-    return 'cpp'
+  if file_type in FILE_EXTENSIONS:
+    return FILE_EXTENSIONS[file_type]
   return 'txt'
-
 
 def get_comment_symbol(file_type):
   if file_type in ['python3', 'python', 'php', 'ruby']:
@@ -68,17 +69,41 @@ def login(username, password):
   CLIENT.post(LOGIN_URL, data=payload, headers=dict(Referer=LOGIN_URL))
 
 
+def fetch_all_attemped_problem_slugs():
+  problems = CLIENT.get(PROBLEMS_URL).json()['stat_status_pairs']
+  accepted_problems = [problem['stat'] for problem in problems if problem['status'] == 'ac']
+  return [problem['question__title_slug'] for problem in accepted_problems]
+
+  # Leetcode will reject the request if requested too soon.
+  # Keep requesting until it succeeds. Avg: 1 second / problem
+
+def fetch_best_submission_for_problem(problem_slug):
+  submissions = CLIENT.get(f'https://leetcode.com/api/submissions/{problem_slug}').json()
+  if 'submissions_dump' not in submissions:
+    raise Exception('Accessing submissions for {problem_slug} denied.')
+
+  submissions = submissions['submissions_dump']
+  filtered_submissions = filter(lambda sub: sub['status_display'] == 'Accepted', submissions)
+  return min(filtered_submissions, key=lambda x: int(x['runtime'].strip('ms')))
+
+
 # Returns the fastest submission for each problem
 def fetch_best_submissions():
-  response = CLIENT.get(SUBMISSIONS_URL).json()
-  submissions = response['submissions_dump']
-  filtered_submissions = filter(
-      lambda sub: sub['status_display'] == 'Accepted', submissions)
-  sorted_submissions = sorted(
-      submissions, key=itemgetter('title', 'runtime'))
-  best_submissions = drop_duplicate_submissions(sorted_submissions)
+  problem_slugs = set(fetch_all_attemped_problem_slugs())
+  num_attempted_problems = len(problem_slugs)
+  submissions = []
 
-  return best_submissions
+  while problem_slugs:
+    current_iteration_slugs = problem_slugs.copy()
+    for slug in current_iteration_slugs:
+      try:
+        submission = fetch_best_submission_for_problem(slug)
+        submissions.append(submission)
+        problem_slugs.discard(slug)
+        progress(num_attempted_problems - len(problem_slugs), num_attempted_problems, f'fetched {slug}')
+      except:
+        time.sleep(random.uniform(0.5, 1.5))
+  return submissions
 
 
 # Keeps the first occurnece of a problem's submission and discard
@@ -98,8 +123,6 @@ def drop_duplicate_submissions(submissions):
 
 
 def save_submission_as_file(submission):
-  print(f'Saving solution for {submission["title"]}')
-
   if not os.path.exists(DIRECTORY):
     os.makedirs(DIRECTORY)
 
@@ -110,6 +133,7 @@ def save_submission_as_file(submission):
     outfile.write(f'{comment_symbol} Runtime: {submission["runtime"]}\n')
     outfile.write(f'{comment_symbol} Memory: {submission["memory"]}\n\n')
     outfile.write(submission['code'])
+
 
 if __name__ == '__main__':
     if (len(sys.argv) != 2):

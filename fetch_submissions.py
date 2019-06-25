@@ -44,8 +44,11 @@ def get_file_extension(file_type):
     return FILE_EXTENSIONS[file_type]
   return 'txt'
 
+
 def get_comment_symbol(file_type):
-  if file_type in ['python3', 'python', 'php', 'ruby']:
+  if file_type in ['sql']:
+    return '--'
+  if file_type in ['python3', 'python', 'php', 'ruby', 'bash']:
     return '#'
   if file_type in ['csharp', 'rust', 'kotlin', 'scala', 'golang', 'swift',
                    'javascript', 'c', 'java', 'cpp']:
@@ -71,19 +74,20 @@ def login(username, password):
 
 def fetch_all_attemped_problem_slugs():
   problems = CLIENT.get(PROBLEMS_URL).json()['stat_status_pairs']
-  accepted_problems = [problem['stat'] for problem in problems if problem['status'] == 'ac']
+  accepted_problems = [problem['stat']
+                       for problem in problems if problem['status'] == 'ac']
   return [problem['question__title_slug'] for problem in accepted_problems]
 
-  # Leetcode will reject the request if requested too soon.
-  # Keep requesting until it succeeds. Avg: 1 second / problem
 
 def fetch_best_submission_for_problem(problem_slug):
-  submissions = CLIENT.get(f'https://leetcode.com/api/submissions/{problem_slug}').json()
+  submissions = CLIENT.get(
+      f'https://leetcode.com/api/submissions/{problem_slug}').json()
   if 'submissions_dump' not in submissions:
     raise Exception('Accessing submissions for {problem_slug} denied.')
 
   submissions = submissions['submissions_dump']
-  filtered_submissions = filter(lambda sub: sub['status_display'] == 'Accepted', submissions)
+  filtered_submissions = filter(
+      lambda sub: sub['status_display'] == 'Accepted', submissions)
   return min(filtered_submissions, key=lambda x: int(x['runtime'].strip('ms')))
 
 
@@ -100,7 +104,8 @@ def fetch_best_submissions():
         submission = fetch_best_submission_for_problem(slug)
         submissions.append(submission)
         problem_slugs.discard(slug)
-        progress(num_attempted_problems - len(problem_slugs), num_attempted_problems, f'fetched {slug}')
+        progress(num_attempted_problems - len(problem_slugs),
+                 num_attempted_problems, f'fetched {slug}')
       except:
         time.sleep(random.uniform(0.5, 1.5))
   return submissions

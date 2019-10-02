@@ -69,7 +69,10 @@ def login(username, password):
       'next': '/'
   }
 
-  CLIENT.post(LOGIN_URL, data=payload, headers=dict(Referer=LOGIN_URL))
+  response = CLIENT.post(LOGIN_URL, data=payload, headers=dict(Referer=LOGIN_URL))
+  if response.url == "https://leetcode.com/accounts/login/":
+    print("The e-mail address and/or password you specified are not correct.", file=sys.stderr)
+    sys.exit(1)
 
 
 def fetch_all_attemped_problem_slugs():

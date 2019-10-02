@@ -155,13 +155,9 @@ def get_user_credentials():
 
 
 if __name__ == '__main__':
-    if (len(sys.argv) != 2):
-        print('Usage: python3 fetch_submissions.py <username>')
-    else:
-        username = sys.argv[1]
-        password = getpass.getpass()
-        login(username, password)
-        submissions = fetch_best_submissions()
-
-        for submission in submissions:
-          save_submission_as_file(submission)
+    successful_login = get_user_credentials()
+    if not successful_login:
+      sys.exit(1)
+    submissions = fetch_best_submissions()
+    for submission in submissions:
+      save_submission_as_file(submission)

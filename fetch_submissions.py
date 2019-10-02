@@ -70,9 +70,9 @@ def login(username, password):
   }
 
   response = CLIENT.post(LOGIN_URL, data=payload, headers=dict(Referer=LOGIN_URL))
-  if response.url == "https://leetcode.com/accounts/login/":
-    print("The e-mail address and/or password you specified are not correct.", file=sys.stderr)
-    sys.exit(1)
+  # The status code and reasons fields for response object return same
+  # values for successful and unsuccessful logins, hence the url field is used
+  return not response.url == "https://leetcode.com/accounts/login/"
 
 
 def fetch_all_attemped_problem_slugs():
@@ -141,6 +141,17 @@ def save_submission_as_file(submission):
     outfile.write(f'{comment_symbol} Runtime: {submission["runtime"]}\n')
     outfile.write(f'{comment_symbol} Memory: {submission["memory"]}\n\n')
     outfile.write(submission['code'])
+
+
+def get_user_credentials():
+  for i in range(5):
+    username = input('Username: ')
+    password = getpass.getpass()
+    successful_login = login(username, password)
+    if successful_login:
+      return True
+    print("The e-mail address and/or password you specified are not correct.", file=sys.stderr)
+  return False
 
 
 if __name__ == '__main__':

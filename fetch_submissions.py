@@ -10,24 +10,6 @@ SUBMISSIONS_URL = 'https://leetcode.com/api/submissions/'
 PROBLEMS_URL = 'https://leetcode.com/api/problems/all/'
 CLIENT = requests.Session()
 DIRECTORY = 'solutions'
-FILE_EXTENSIONS = {
-    'mysql': 'sql',
-    'bash': 'sh',
-    'python3': 'py',
-    'php': 'php',
-    'rust': 'rs',
-    'kotlin': 'kt',
-    'scala': 'scala',
-    'golang': 'go',
-    'swift': 'swift',
-    'ruby': 'rb',
-    'javascript': 'py',
-    'csharp': 'cs',
-    'c': 'c',
-    'python': 'py',
-    'java': 'java',
-    'cpp': 'cpp'
-}
 
 
 def progress(count, total, status=''):
@@ -40,19 +22,38 @@ def progress(count, total, status=''):
 
 
 def get_file_extension(file_type):
-  if file_type in FILE_EXTENSIONS:
-    return FILE_EXTENSIONS[file_type]
-  return 'txt'
+  try:
+    return {
+      'mysql': 'sql',
+      'bash': 'sh',
+      'python3': 'py',
+      'php': 'php',
+      'rust': 'rs',
+      'kotlin': 'kt',
+      'scala': 'scala',
+      'golang': 'go',
+      'swift': 'swift',
+      'ruby': 'rb',
+      'javascript': 'py',
+      'csharp': 'cs',
+      'c': 'c',
+      'python': 'py',
+      'java': 'java',
+      'cpp': 'cpp'
+    }[file_type]
+  except KeyError:
+    return 'txt'
 
 
-def get_comment_symbol(file_type):
-  if file_type in ['sql']:
-    return '--'
-  if file_type in ['python3', 'python', 'php', 'ruby', 'bash']:
-    return '#'
-  if file_type in ['csharp', 'rust', 'kotlin', 'scala', 'golang', 'swift',
-                   'javascript', 'c', 'java', 'cpp']:
-    return '//'
+def get_comment_symbol(lang):
+  lang_comment_symbol_mapping = {
+      'mysql': '--',
+      ('python3', 'python', 'php', 'ruby', 'bash'): '#',
+      ('csharp', 'rust', 'kotlin', 'scala', 'golang', 'swift', 'javascript', 'c', 'java', 'cpp'): '//'
+  }
+  for langs in lang_comment_symbol_mapping.keys():
+      if lang in langs:
+          return lang_comment_symbol_mapping[langs]
   return ''
 
 

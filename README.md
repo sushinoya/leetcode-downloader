@@ -8,5 +8,5 @@ A simple script to download your fastest, accepted solutions from Leetcode!
  python3 -m venv p3env
  source p3env/bin/activate
  pip install -r requirements.txt
- python3 fetch_submissions.py <username>
+ python fetch_submissions.py <username>
 ```

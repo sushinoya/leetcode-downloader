@@ -72,7 +72,7 @@ def login(username, password):
   CLIENT.post(LOGIN_URL, data=payload, headers=dict(Referer=LOGIN_URL))
 
 
-def fetch_all_attemped_problem_slugs():
+def fetch_all_attempted_problem_slugs():
   problems = CLIENT.get(PROBLEMS_URL).json()['stat_status_pairs']
   accepted_problems = [problem['stat']
                        for problem in problems if problem['status'] == 'ac']
@@ -93,7 +93,7 @@ def fetch_best_submission_for_problem(problem_slug):
 
 # Returns the fastest submission for each problem
 def fetch_best_submissions():
-  problem_slugs = set(fetch_all_attemped_problem_slugs())
+  problem_slugs = set(fetch_all_attempted_problem_slugs())
   num_attempted_problems = len(problem_slugs)
   submissions = []
 
@@ -111,7 +111,7 @@ def fetch_best_submissions():
   return submissions
 
 
-# Keeps the first occurnece of a problem's submission and discard
+# Keeps the first occurrence of a problem's submission and discard
 # any following submissions to the same problem
 def drop_duplicate_submissions(submissions):
   seen_problems = set()

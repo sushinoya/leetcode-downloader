@@ -46,14 +46,13 @@ def get_file_extension(file_type):
 
 
 def get_comment_symbol(lang):
-  lang_comment_symbol_mapping = {
-      'mysql': '--',
-      ('python3', 'python', 'php', 'ruby', 'bash'): '#',
-      ('csharp', 'rust', 'kotlin', 'scala', 'golang', 'swift', 'javascript', 'c', 'java', 'cpp'): '//'
-  }
-  for langs in lang_comment_symbol_mapping.keys():
-      if lang in langs:
-          return lang_comment_symbol_mapping[langs]
+  if file_type in ['mysql']:
+    return '--'
+  if file_type in ['python3', 'python', 'php', 'ruby', 'bash']:
+    return '#'
+  if file_type in ['csharp', 'rust', 'kotlin', 'scala', 'golang', 'swift',
+                   'javascript', 'c', 'java', 'cpp']:
+    return '//'
   return ''
 
 

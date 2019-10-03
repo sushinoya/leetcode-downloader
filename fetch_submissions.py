@@ -150,7 +150,7 @@ def get_user_credentials():
     successful_login = login(username, password)
     if successful_login:
       return True
-    print("The e-mail address and/or password you specified are not correct.", file=sys.stderr)
+    print("The username and/or password you specified are not correct.", file=sys.stderr)
   return False
 
 

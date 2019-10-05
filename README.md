@@ -6,5 +6,5 @@ A simple script to download your fastest, accepted solutions from Leetcode!
 
 ```shell
  pip install requests
- python fetch_submissions.py <username>
+ python3 fetch_submissions.py <username>
 ```

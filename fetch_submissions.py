@@ -1,3 +1,4 @@
+import argparse
 import os
 import sys
 import requests
@@ -56,7 +57,7 @@ def get_comment_symbol(file_type):
   return ''
 
 
-def login(username, password):
+def successfully_login(username, password):
   # Important step to get csrftoken
   CLIENT.get(LOGIN_URL)
 
@@ -143,19 +144,23 @@ def save_submission_as_file(submission):
     outfile.write(submission['code'])
 
 
-def get_user_credentials():
-  for i in range(5):
-    username = input('Username: ')
-    password = getpass.getpass()
-    successful_login = login(username, password)
-    if successful_login:
-      return True
-    print("The username and/or password you specified are not correct.", file=sys.stderr)
-  sys.exit(1)
-
-
 if __name__ == '__main__':
-    get_user_credentials()
-    submissions = fetch_best_submissions()
-    for submission in submissions:
-      save_submission_as_file(submission)
+    parser = argparse.ArgumentParser(description="A simple script to download your fastest, accepted solutions from Leetcode!")
+    parser.add_argument('--retry_count', type=int, default=5, help="maximum number of incorrect logins allowed")
+    args = parser.parse_args()
+
+    is_logged_in = False
+    for i in range(args.retry_count):
+      username = input('Username: ')
+      password = getpass.getpass()
+      if successfully_login(username, password):
+        is_logged_in = True
+        break
+      print("The username and/or password you specified are not correct.", file=sys.stderr)
+
+    if not is_logged_in:
+      print(f"You have exceeded the maximum number of login attempts allowed.")
+    else:
+      submissions = fetch_best_submissions()
+      for submission in submissions:
+        save_submission_as_file(submission)

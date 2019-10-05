@@ -1,3 +1,4 @@
+import collections
 import os
 import sys
 import requests
@@ -9,6 +10,24 @@ LOGIN_URL = 'https://leetcode.com/accounts/login/'
 SUBMISSIONS_URL = 'https://leetcode.com/api/submissions/'
 PROBLEMS_URL = 'https://leetcode.com/api/problems/all/'
 CLIENT = requests.Session()
+FILE_EXTENSIONS = collections.defaultdict(lambda: 'txt', {
+    'mysql': 'sql',
+    'bash': 'sh',
+    'python3': 'py',
+    'php': 'php',
+    'rust': 'rs',
+    'kotlin': 'kt',
+    'scala': 'scala',
+    'golang': 'go',
+    'swift': 'swift',
+    'ruby': 'rb',
+    'javascript': 'py',
+    'csharp': 'cs',
+    'c': 'c',
+    'python': 'py',
+    'java': 'java',
+    'cpp': 'cpp'
+})
 DIRECTORY = 'solutions'
 
 
@@ -22,30 +41,10 @@ def progress(count, total, status=''):
 
 
 def get_file_extension(file_type):
-  try:
-    return {
-      'mysql': 'sql',
-      'bash': 'sh',
-      'python3': 'py',
-      'php': 'php',
-      'rust': 'rs',
-      'kotlin': 'kt',
-      'scala': 'scala',
-      'golang': 'go',
-      'swift': 'swift',
-      'ruby': 'rb',
-      'javascript': 'py',
-      'csharp': 'cs',
-      'c': 'c',
-      'python': 'py',
-      'java': 'java',
-      'cpp': 'cpp'
-    }[file_type]
-  except KeyError:
-    return 'txt'
+  return FILE_EXTENSIONS[file_type]
 
 
-def get_comment_symbol(lang):
+def get_comment_symbol(file_type):
   if file_type in ['mysql']:
     return '--'
   if file_type in ['python3', 'python', 'php', 'ruby', 'bash']:

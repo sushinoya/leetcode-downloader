@@ -151,13 +151,11 @@ def get_user_credentials():
     if successful_login:
       return True
     print("The username and/or password you specified are not correct.", file=sys.stderr)
-  return False
+  sys.exit(1)
 
 
 if __name__ == '__main__':
-    successful_login = get_user_credentials()
-    if not successful_login:
-      sys.exit(1)
+    get_user_credentials()
     submissions = fetch_best_submissions()
     for submission in submissions:
       save_submission_as_file(submission)

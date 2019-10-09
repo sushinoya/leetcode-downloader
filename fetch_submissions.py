@@ -73,7 +73,7 @@ def successfully_login(username, password):
   response = CLIENT.post(LOGIN_URL, data=payload, headers=dict(Referer=LOGIN_URL))
   # The status code and reasons fields for response object return same
   # values for successful and unsuccessful logins, hence the url field is used
-  return not response.url == "https://leetcode.com/accounts/login/"
+  return response.url != "https://leetcode.com/accounts/login/"
 
 
 def fetch_all_attempted_problem_slugs():

@@ -145,12 +145,8 @@ def save_submission_as_file(submission):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="A simple script to download your fastest, accepted solutions from Leetcode!")
-    parser.add_argument('--retry_count', type=int, default=5, help="maximum number of incorrect logins allowed")
-    args = parser.parse_args()
-
     is_logged_in = False
-    for i in range(args.retry_count):
+    for i in range(5):
       username = input('Username: ')
       password = getpass.getpass()
       if successfully_login(username, password):

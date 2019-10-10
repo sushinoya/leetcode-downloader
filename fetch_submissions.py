@@ -145,7 +145,7 @@ def save_submission_as_file(submission):
 
 if __name__ == '__main__':
     is_logged_in = False
-    for i in range(5):
+    for _ in range(5):
       username = input('Username: ')
       password = getpass.getpass()
       if successfully_login(username, password):
@@ -154,7 +154,7 @@ if __name__ == '__main__':
       print("The username and/or password you specified are not correct.", file=sys.stderr)
 
     if not is_logged_in:
-      print(f"You have exceeded the maximum number of login attempts allowed.")
+      print(f"You have exceeded the maximum number of login attempts allowed.", file=sys.stderr)
     else:
       submissions = fetch_best_submissions()
       for submission in submissions:

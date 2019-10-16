@@ -1,3 +1,4 @@
+import collections
 import os
 import sys
 import requests
@@ -9,8 +10,7 @@ LOGIN_URL = 'https://leetcode.com/accounts/login/'
 SUBMISSIONS_URL = 'https://leetcode.com/api/submissions/'
 PROBLEMS_URL = 'https://leetcode.com/api/problems/all/'
 CLIENT = requests.Session()
-DIRECTORY = 'solutions'
-FILE_EXTENSIONS = {
+FILE_EXTENSIONS = collections.defaultdict(lambda: 'txt', {
     'mysql': 'sql',
     'bash': 'sh',
     'python3': 'py',
@@ -27,7 +27,8 @@ FILE_EXTENSIONS = {
     'python': 'py',
     'java': 'java',
     'cpp': 'cpp'
-}
+})
+DIRECTORY = 'solutions'
 
 
 def progress(count, total, status=''):
@@ -40,13 +41,11 @@ def progress(count, total, status=''):
 
 
 def get_file_extension(file_type):
-  if file_type in FILE_EXTENSIONS:
-    return FILE_EXTENSIONS[file_type]
-  return 'txt'
+  return FILE_EXTENSIONS[file_type]
 
 
 def get_comment_symbol(file_type):
-  if file_type in ['sql']:
+  if file_type in ['mysql']:
     return '--'
   if file_type in ['python3', 'python', 'php', 'ruby', 'bash']:
     return '#'

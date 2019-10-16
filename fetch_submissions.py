@@ -55,7 +55,7 @@ def get_comment_symbol(file_type):
   return ''
 
 
-def login(username, password):
+def successfully_login(username, password):
   # Important step to get csrftoken
   CLIENT.get(LOGIN_URL)
 
@@ -68,7 +68,10 @@ def login(username, password):
       'next': '/'
   }
 
-  CLIENT.post(LOGIN_URL, data=payload, headers=dict(Referer=LOGIN_URL))
+  response = CLIENT.post(LOGIN_URL, data=payload, headers=dict(Referer=LOGIN_URL))
+  # The status code and reasons fields for response object return same
+  # values for successful and unsuccessful logins, hence the url field is used
+  return response.url != "https://leetcode.com/accounts/login/"
 
 
 def fetch_all_attempted_problem_slugs():
@@ -140,13 +143,18 @@ def save_submission_as_file(submission):
 
 
 if __name__ == '__main__':
-    if (len(sys.argv) != 2):
-        print('Usage: python3 fetch_submissions.py <username>')
-    else:
-        username = sys.argv[1]
-        password = getpass.getpass()
-        login(username, password)
-        submissions = fetch_best_submissions()
+    is_logged_in = False
+    for _ in range(5):
+      username = input('Username: ')
+      password = getpass.getpass()
+      if successfully_login(username, password):
+        is_logged_in = True
+        break
+      print("The username and/or password you specified are not correct.", file=sys.stderr)
 
-        for submission in submissions:
-          save_submission_as_file(submission)
+    if not is_logged_in:
+      print(f"You have exceeded the maximum number of login attempts allowed.", file=sys.stderr)
+    else:
+      submissions = fetch_best_submissions()
+      for submission in submissions:
+        save_submission_as_file(submission)
